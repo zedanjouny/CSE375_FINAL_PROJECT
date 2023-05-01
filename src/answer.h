@@ -37,4 +37,4 @@ class Answer {
         bool end() {
             return nextAnswer.empty();
         }
-}
+};
