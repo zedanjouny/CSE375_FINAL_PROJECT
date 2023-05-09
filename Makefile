@@ -1,2 +1,2 @@
 all:
-	g++ src/main.cpp -o main -O3 -Iinclude
+	g++ -std=c++20 src/main.cpp -o main -Iinclude -lchess -Llib
