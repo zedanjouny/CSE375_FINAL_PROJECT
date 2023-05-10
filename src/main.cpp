@@ -12,18 +12,8 @@ int main() {
     auto checkmate = checkmate_in_n(pos);
     auto checkmate_concurrent = checkmate_in_n_concurrent(pos);
     auto answer = checkmate.findAnswer(5);
+    cout << answer << endl;
     cout << "here" << endl;
     auto answer_quick = checkmate_concurrent.findAnswer(5);
-    auto mv = answer.getAnswerMove();
-    while(mv)
-    {
-        cout << mv << endl;
-        answer = answer.getNextAnswer(mv);
-        if(mv == answer.getAnswerMove())
-        {
-            break;
-        }
-        mv = answer.getAnswerMove();
-    }
     return 0;
 }
