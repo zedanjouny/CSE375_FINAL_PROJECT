@@ -19,44 +19,49 @@ class checkmate_in_n_concurrent{
             return _answerMove(depth, g);
         }
 
-        bool _answerMove(int depth, task_group &g) {
-            auto moves = this->pos.legal_moves();
-            bool found = false;
-            for(const auto &move : moves){
-                g.run([&]() {
-                this->pos.makemove(move);
-                if (!_opponentMove(depth, g)) {
-                    this->pos.undomove();
-                } else {
-                    found = true;
-                    g.cancel(); // stop executing other sub-tasks
-                }
-                });
-            }
-            g.wait();
-            return found;
+        bool _answerMove(int depth, Position po)
+        {
+            
         }
 
-        bool _opponentMove(int depth, task_group &g) {
-            auto moves = this->pos.legal_moves();
-            if (moves.size() == 0) {
-                return this->pos.is_checkmate();
-            } else if (depth == 1) {
-                return false;
-            }
-            bool found = true;
-            for (const auto &move : moves) {
-                g.run([&]() {
-                    this->pos.makemove(move);
-                    if (!_answerMove(depth - 1, g)) {
-                        this->pos.undomove();
-                    } else {
-                        // answer->putAnswer(move, *next);
-                    }
-                    found &= found; // combine results from sub-tasks
-                });
-            }
-            g.wait(); // wait for all sub-tasks to complete
-            return found;
-        }
+        // bool _answerMove(int depth, task_group &g) {
+        //     auto moves = this->pos.legal_moves();
+        //     bool found = false;
+        //     for(const auto &move : moves){
+        //         g.run([&]() {
+        //         this->pos.makemove(move);
+        //         if (!_opponentMove(depth, g)) {
+        //             this->pos.undomove();
+        //         } else {
+        //             found = true;
+        //             g.cancel(); // stop executing other sub-tasks
+        //         }
+        //         });
+        //     }
+        //     g.wait();
+        //     return found;
+        // }
+
+        // bool _opponentMove(int depth, task_group &g) {
+        //     auto moves = this->pos.legal_moves();
+        //     if (moves.size() == 0) {
+        //         return this->pos.is_checkmate();
+        //     } else if (depth == 1) {
+        //         return false;
+        //     }
+        //     bool found = true;
+        //     for (const auto &move : moves) {
+        //         g.run([&]() {
+        //             this->pos.makemove(move);
+        //             if (!_answerMove(depth - 1, g)) {
+        //                 this->pos.undomove();
+        //             } else {
+        //                 // answer->putAnswer(move, *next);
+        //             }
+        //             found &= found; // combine results from sub-tasks
+        //         });
+        //     }
+        //     g.wait(); // wait for all sub-tasks to complete
+        //     return found;
+        // }
 };
