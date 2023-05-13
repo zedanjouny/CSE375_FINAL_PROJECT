@@ -21,8 +21,7 @@ class checkmate_in_n_modified{
                 Position temp = p;
                 temp.makemove(move);
                 bool found = _opponentMove(depth, temp);
-                if(found)
-                {
+                if(found) {
                     return true;
                 }
             }

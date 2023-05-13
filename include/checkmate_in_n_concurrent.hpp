@@ -1,67 +1,85 @@
 #include <libchess/position.hpp>
-// #include <answer_concurrent.hpp>
 #include <tbb/task_group.h>
+#include <tbb/tbb.h>
+#include <tbb/parallel_for.h>
+#include <tbb/parallel_invoke.h>
+#include <atomic>
+#include <iostream>
 
 using namespace std;
 using namespace libchess;
 using namespace tbb;
 
-class checkmate_in_n_concurrent{
+class checkmate_in_n_concurrent {
     Position pos;
+    atomic<bool> check_mate_found;
 
-    public:
-        checkmate_in_n_concurrent(Position pos) {
-            this->pos = pos;
+public:
+    checkmate_in_n_concurrent(Position pos)
+        : pos(pos), check_mate_found(false) {}
+
+    bool findAnswer(int depth) {
+        return _answerMove(depth, this->pos);
+    }
+
+    bool _answerMove(int depth, Position p) {
+        if (check_mate_found.load(memory_order_acquire)) {
+            return false;
         }
-        
-        bool findAnswer(int depth) {
-            task_group g;
-            return _answerMove(depth, g);
+
+        auto moves = p.legal_moves();
+        task_group tg;
+
+        for (const auto &move : moves) {
+            if (check_mate_found.load(memory_order_acquire)) {
+                break;
+            }
+
+            tg.run([&, move]() {
+                Position temp = p;
+                temp.makemove(move);
+                bool found = _opponentMove(depth, temp);
+                if (found) {
+                    bool expected = false;
+                    check_mate_found.compare_exchange_strong(expected, true, memory_order_acq_rel);
+                }
+            });
         }
 
-        bool _answerMove(int depth, Position po)
-        {
-            
+        tg.wait();
+        return check_mate_found.load(memory_order_acquire);
+    }
+
+    bool _opponentMove(int depth, Position p) {
+        if (check_mate_found.load(memory_order_acquire)) {
+            return false;
         }
 
-        // bool _answerMove(int depth, task_group &g) {
-        //     auto moves = this->pos.legal_moves();
-        //     bool found = false;
-        //     for(const auto &move : moves){
-        //         g.run([&]() {
-        //         this->pos.makemove(move);
-        //         if (!_opponentMove(depth, g)) {
-        //             this->pos.undomove();
-        //         } else {
-        //             found = true;
-        //             g.cancel(); // stop executing other sub-tasks
-        //         }
-        //         });
-        //     }
-        //     g.wait();
-        //     return found;
-        // }
+        auto moves = p.legal_moves();
+        if (moves.size() == 0) { // no moves left -> checkmate
+            if (p.is_checkmate()) {
+                return true;
+            } else {
+                cout << "Error on calling checkmate step\n";
+            }
+        } else if (depth == 1) {
+            return false;
+        }
+        for (const auto &move : moves) {
+            if (check_mate_found.load(memory_order_acquire)) {
+                break;
+            }
 
-        // bool _opponentMove(int depth, task_group &g) {
-        //     auto moves = this->pos.legal_moves();
-        //     if (moves.size() == 0) {
-        //         return this->pos.is_checkmate();
-        //     } else if (depth == 1) {
-        //         return false;
-        //     }
-        //     bool found = true;
-        //     for (const auto &move : moves) {
-        //         g.run([&]() {
-        //             this->pos.makemove(move);
-        //             if (!_answerMove(depth - 1, g)) {
-        //                 this->pos.undomove();
-        //             } else {
-        //                 // answer->putAnswer(move, *next);
-        //             }
-        //             found &= found; // combine results from sub-tasks
-        //         });
-        //     }
-        //     g.wait(); // wait for all sub-tasks to complete
-        //     return found;
-        // }
+            Position temp = p;
+            temp.makemove(move);
+            bool found = _answerMove(depth - 1, temp);
+            if (!found) {
+                return false;
+            }
+        }
+        cout << "Not supposed to reach here ever\n"; // for concurrent version it is reaching this print statement 
+        // due to skips within the for loop once the checkmate has been found
+        // need more testing sets to prove/disprove the algorithm works
+        return true;
+    }
 };
