@@ -1,7 +1,4 @@
 #include <libchess/position.hpp>
-#include <tbb/tbb.h>
-#include <tbb/parallel_for.h>
-#include <atomic>
 #include <iostream>
 #include <thread>
 

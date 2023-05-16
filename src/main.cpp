@@ -32,6 +32,7 @@ int main() {
     auto checkmate = checkmate_in_n(pos);
     auto modified = checkmate_in_n_modified(pos);
     auto checkmate_concurrent = checkmate_in_n_concurrent(pos);
+    auto checkmate_concurrent_1 = checkmate_in_n_concurrent_1(pos, 4);
     stopwatch.elapsed();
     bool answer = checkmate.findAnswer(2);
     cout << "Checkmate-In-N Sequential Returned " << answer << " with an execution time: " << stopwatch.elapsed() << endl;
@@ -39,5 +40,7 @@ int main() {
     // cout << "Checkmate-In-N Modified Returned " << answer_modified << " with an execution time: " << stopwatch.elapsed() << endl;
     bool answer_concurrent = checkmate_concurrent.findAnswer(2);
     cout << "Checkmate-In-N Concurrent Returned " << answer_concurrent << " with an execution time: " << stopwatch.elapsed() << endl;
+    bool answer_concurrent_1 = checkmate_concurrent_1.findAnswer(2);
+    cout << "Checkmate-In-N Concurrent_1 Returned " << answer_concurrent_1 << " with an execution time: " << stopwatch.elapsed() << endl;
     return 0;
 }
