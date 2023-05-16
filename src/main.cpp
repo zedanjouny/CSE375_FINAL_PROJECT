@@ -21,7 +21,7 @@ public:
 
 // Test the solution
 int main() {
-    string fen = "r1bq2k1/ppp2r1p/2np1pNQ/2bNpp2/2B1P3/3P4/PPP2PPP/R3K2R w KQ - 0 1";
+    string fen = "6q1/3r1p2/2N1nk1K/3rp3/8/5PP1/8/1Q1N4 w - - 0 1";
     timer stopwatch;
     auto pos = libchess::Position(fen, true);
     auto checkmate = checkmate_in_n(pos);
@@ -30,8 +30,8 @@ int main() {
     stopwatch.elapsed();
     bool answer = checkmate.findAnswer(5);
     cout << "Checkmate-In-N Sequential Returned " << answer << " with an execution time: " << stopwatch.elapsed() << endl;
-    bool answer_modified = modified.findAnswer(5);
-    cout << "Checkmate-In-N Modified Returned " << answer_modified << " with an execution time: " << stopwatch.elapsed() << endl;
+    // bool answer_modified = modified.findAnswer(7);
+    // cout << "Checkmate-In-N Modified Returned " << answer_modified << " with an execution time: " << stopwatch.elapsed() << endl;
     bool answer_concurrent = checkmate_concurrent.findAnswer(5);
     cout << "Checkmate-In-N Concurrent Returned " << answer_concurrent << " with an execution time: " << stopwatch.elapsed() << endl;
     return 0;
