@@ -1,6 +1,7 @@
 #include <checkmate_in_n_sequential.hpp>
 #include <checkmate_in_n_concurrent.hpp>
 #include <checkmate_in_n_concurrent_1.hpp>
+#include <checkmate_in_n_concurrent_2.hpp>
 #include <checkmate_in_n_modified.hpp>
 #include <iostream>
 #include <string>
@@ -35,14 +36,19 @@ int main() {
     unsigned int numThreads = std::thread::hardware_concurrency();
     auto checkmate_concurrent_1 = checkmate_in_n_concurrent_1(pos, 8);
     stopwatch.elapsed();
-    bool answer = checkmate.findAnswer(6);
+    bool answer = checkmate.findAnswer(5);
     cout << "Checkmate-In-N Sequential Returned " << answer << " with an execution time: " << stopwatch.elapsed() << endl;
     // bool answer_modified = modified.findAnswer(7);
     // cout << "Checkmate-In-N Modified Returned " << answer_modified << " with an execution time: " << stopwatch.elapsed() << endl;
     // bool answer_concurrent = checkmate_concurrent.findAnswer(5);
     // cout << "Checkmate-In-N Concurrent Returned " << answer_concurrent << " with an execution time: " << stopwatch.elapsed() << endl;
-    printf("Running the concurrent version with %d threads\n", numThreads);
-    bool answer_concurrent_1 = checkmate_concurrent_1.findAnswer(6);
+    // printf("Running the concurrent version with %d threads\n", numThreads);
+    bool answer_concurrent_1 = checkmate_concurrent_1.findAnswer(5);
     cout << "Checkmate-In-N Concurrent_1 Returned " << answer_concurrent_1 << " with an execution time: " << stopwatch.elapsed() << endl;
+
+    auto checkmate_concurrent_2 = checkmate_in_n_concurrent_2(pos, 8);
+    stopwatch.elapsed();
+    bool answer_concurrent_2 = checkmate_concurrent_2.findAnswer(5);
+    cout << "Checkmate-In-N Concurrent_2 Returned " << answer_concurrent_2 << " with an execution time: " << stopwatch.elapsed() << endl;
     return 0;
 }

@@ -1,35 +1,36 @@
 #include <libchess/position.hpp>
 #include <iostream>
 #include <thread>
+#include <tbb/tbb.h>
 
 using namespace std;
 using namespace libchess;
 using namespace tbb;
 
-class checkmate_in_n_concurrent_1 {
+class checkmate_in_n_concurrent_2 {
     Position pos;
     int threads_size;
+    atomic<bool> checkmate_found;
+    int maxdepth;
 
 public:
-    // Constructor initializing position and thread size
-    checkmate_in_n_concurrent_1(Position pos, int threads_size)
-        : pos(pos), threads_size(threads_size) {}
+    // Constructor initializing position, thread size, and checkmate-related variables
+    checkmate_in_n_concurrent_2(Position pos, int threads_size)
+        : pos(pos), threads_size(threads_size), checkmate_found(false), maxdepth(-1) {}
 
     // Main function to find the answer
     bool findAnswer(int depth) {
         auto moves = this->pos.legal_moves();
+        maxdepth = depth;
         vector<Position> ps(moves.size());
 
-        // Parallelize the loop to create temporary positions
-        parallel_for(blocked_range<int>(0, moves.size()), [&](blocked_range<int> r) {
-            for (int i = r.begin(); i < r.end(); ++i) {
-                Position t(this->pos.get_fen());
-                t.makemove(moves[i]);
-                ps[i] = t;
-            }
-        });
+        // Create temporary positions
+        for (int i = 0; i < moves.size(); i++) {
+            Position t(this->pos.get_fen());
+            t.makemove(moves[i]);
+            ps[i] = t;
+        }
 
-        vector<bool> found(ps.size());
         vector<thread> threads(threads_size);
 
         // Spawn multiple threads to perform the work concurrently
@@ -38,7 +39,7 @@ public:
             if (i == threads.size() - 1) {
                 ending_index = ps.size();
             }
-            threads[i] = thread(&checkmate_in_n_concurrent_1::do_work, this, i * (ps.size() / threads_size), ending_index, ps, ref(found), depth, i);
+            threads[i] = thread(&checkmate_in_n_concurrent_2::do_work, this, i * (ps.size() / threads_size), ending_index, ps, depth, i);
         }
 
         // Wait for all threads to finish
@@ -46,27 +47,22 @@ public:
             threads[i].join();
         }
 
-        // Check if any thread found a checkmate
-        for (int i = 0; i < found.size(); i++) {
-            if (found[i]) {
-                return true;
-            }
-        }
-        return false;
+        // Return the value of checkmate_found
+        return checkmate_found.load(memory_order_acquire);
     }
 
     // Worker function for each thread
-    void do_work(int starting_index, int ending_index, vector<Position> ps, vector<bool> &found, int depth, int thread_index) {
+    void do_work(int starting_index, int ending_index, vector<Position> ps, int depth, int thread_index) {
         for (int i = starting_index; i < ending_index; i++) {
-            if (_opponentMove(depth, ps[i])) {
-                found[i] = true;
-                break;
-            }
+            _opponentMove(depth, ps[i]);
         }
     }
 
     // Attacker move function (the party attempting to perform forced checkmate)
     bool _answerMove(int depth, Position p) {
+        if (checkmate_found.load(memory_order_relaxed)) {
+            return true;
+        }
         auto moves = p.legal_moves();
 
         for (const auto &move : moves) {
@@ -83,6 +79,9 @@ public:
 
     // Defender move function
     bool _opponentMove(int depth, Position p) {
+        if (checkmate_found.load(memory_order_relaxed)) {
+            return true;
+        }
         auto moves = p.legal_moves();
 
         if (moves.size() == 0) { // No moves left, return either checkmate (true) or stalemate (false)
@@ -99,6 +98,10 @@ public:
             if (!found) { // All need to be true in order to pass the for loop, if one is false, then the defender can escape the checkmate
                 return false;
             }
+        }
+
+        if (depth == maxdepth) {
+            checkmate_found.store(true, memory_order_relaxed);
         }
         return true;
     }
