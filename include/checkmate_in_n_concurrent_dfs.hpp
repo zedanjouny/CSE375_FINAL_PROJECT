@@ -6,13 +6,13 @@ using namespace std;
 using namespace libchess;
 using namespace tbb;
 
-class checkmate_in_n_concurrent_1 {
+class checkmate_in_n_concurrent_dfs {
     Position pos;
     int threads_size;
 
 public:
     // Constructor initializing position and thread size
-    checkmate_in_n_concurrent_1(Position pos, int threads_size)
+    checkmate_in_n_concurrent_dfs(Position pos, int threads_size)
         : pos(pos), threads_size(threads_size) {}
 
     // Main function to find the answer
@@ -38,7 +38,7 @@ public:
             if (i == threads.size() - 1) {
                 ending_index = ps.size();
             }
-            threads[i] = thread(&checkmate_in_n_concurrent_1::do_work, this, i * (ps.size() / threads_size), ending_index, ps, ref(found), depth, i);
+            threads[i] = thread(&checkmate_in_n_concurrent_dfs::do_work, this, i * (ps.size() / threads_size), ending_index, ps, ref(found), depth, i);
         }
 
         // Wait for all threads to finish

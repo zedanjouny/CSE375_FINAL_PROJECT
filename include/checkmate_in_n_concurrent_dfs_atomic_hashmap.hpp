@@ -2,21 +2,43 @@
 #include <iostream>
 #include <thread>
 #include <tbb/tbb.h>
+#include <tbb/concurrent_hash_map.h>
 
 using namespace std;
 using namespace libchess;
 using namespace tbb;
 
-class checkmate_in_n_concurrent_2 {
+struct MyHashCompare {
+    static size_t hash( const string& fen ) {
+        size_t h = 0;
+        for( const char* s = fen.c_str(); *s; ++s )
+            h = (h*17)^*s;
+        return h;
+    }
+    //! True if strings are equal
+    static bool equal( const string& fen, const string& y ) {
+        return fen==y;
+    }
+};
+
+struct boardOutcome {
+    bool checkmate;
+    int greatestDepth;
+};
+
+typedef concurrent_hash_map<string, boardOutcome, MyHashCompare> BoardMap;
+
+class checkmate_in_n_concurrent_dfs_atomic_hashmap {
     Position pos;
     int threads_size;
     atomic<bool> checkmate_found;
     int maxdepth;
+    BoardMap boardMap;
 
 public:
     // Constructor initializing position, thread size, and checkmate-related variables
-    checkmate_in_n_concurrent_2(Position pos, int threads_size)
-        : pos(pos), threads_size(threads_size), checkmate_found(false), maxdepth(-1) {}
+    checkmate_in_n_concurrent_dfs_atomic_hashmap(Position pos, int threads_size)
+        : pos(pos), threads_size(threads_size), checkmate_found(false), maxdepth(-1), boardMap(threads_size) {}
 
     // Main function to find the answer
     bool findAnswer(int depth) {
@@ -39,7 +61,7 @@ public:
             if (i == threads.size() - 1) {
                 ending_index = ps.size();
             }
-            threads[i] = thread(&checkmate_in_n_concurrent_2::do_work, this, i * (ps.size() / threads_size), ending_index, ps, depth, i);
+            threads[i] = thread(&checkmate_in_n_concurrent_dfs_atomic_hashmap::do_work, this, i * (ps.size() / threads_size), ending_index, ps, depth, i);
         }
 
         // Wait for all threads to finish
@@ -58,7 +80,6 @@ public:
         }
     }
 
-    // Attacker move function (the party attempting to perform forced checkmate)
     bool _answerMove(int depth, Position p) {
         if (checkmate_found.load(memory_order_relaxed)) {
             return true;
@@ -68,23 +89,38 @@ public:
         for (const auto &move : moves) {
             Position temp(p.get_fen());
             temp.makemove(move);
+            
+            // Check if the board has already been processed
+            BoardMap::const_accessor result;
+            if (boardMap.find(result, temp.get_fen())) {
+                if (depth <= result->second.greatestDepth) {
+                    return result->second.checkmate;
+                }
+            }
+            result.release();
+            
             bool found = _opponentMove(depth, temp);
 
+            // Store the board outcome in the concurrent_hash_map
             if (found) {
-                return true; // If the defender cannot escape the checkmate, then the attacker wins
+                BoardMap::accessor a;
+                boardMap.insert(a, temp.get_fen());
+                a->second.checkmate = true;
+                a->second.greatestDepth = depth;
+                a.release();
+                return true;
             }
         }
         return false;
     }
 
-    // Defender move function
     bool _opponentMove(int depth, Position p) {
         if (checkmate_found.load(memory_order_relaxed)) {
             return true;
         }
         auto moves = p.legal_moves();
 
-        if (moves.size() == 0) { // No moves left, return either checkmate (true) or stalemate (false)
+        if (moves.size() == 0) {
             return p.is_checkmate();
         } else if (depth == 1) {
             return false;
@@ -93,9 +129,27 @@ public:
         for (const auto &move : moves) {
             Position temp(p.get_fen());
             temp.makemove(move);
+
+            // Check if the board has already been processed
+            BoardMap::const_accessor result;
+            if (boardMap.find(result, temp.get_fen())) {
+                if (depth <= result->second.greatestDepth) {
+                    if (!result->second.checkmate) {
+                        return false;
+                    }
+                }
+            }
+            result.release();
+
             bool found = _answerMove(depth - 1, temp);
 
-            if (!found) { // All need to be true in order to pass the for loop, if one is false, then the defender can escape the checkmate
+            // Store the board outcome in the concurrent_hash_map
+            if (!found) {
+                BoardMap::accessor a;
+                boardMap.insert(a, temp.get_fen());
+                a->second.checkmate = false;
+                a->second.greatestDepth = depth;
+                a.release();
                 return false;
             }
         }

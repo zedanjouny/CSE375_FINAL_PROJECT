@@ -1,7 +1,8 @@
 #include <checkmate_in_n_sequential.hpp>
-#include <checkmate_in_n_concurrent.hpp>
-#include <checkmate_in_n_concurrent_1.hpp>
-#include <checkmate_in_n_concurrent_2.hpp>
+#include <checkmate_in_n_concurrent_bfs.hpp>
+#include <checkmate_in_n_concurrent_dfs.hpp>
+#include <checkmate_in_n_concurrent_dfs_atomic.hpp>
+#include <checkmate_in_n_concurrent_dfs_atomic_hashmap.hpp>
 #include <checkmate_in_n_modified.hpp>
 #include <iostream>
 #include <string>
@@ -32,9 +33,10 @@ int main() {
     auto pos = libchess::Position(fen, true);
     auto checkmate = checkmate_in_n(pos);
     auto modified = checkmate_in_n_modified(pos);
-    auto checkmate_concurrent = checkmate_in_n_concurrent(pos);
+    auto checkmate_concurrent = checkmate_in_n_concurrent_bfs(pos);
     unsigned int numThreads = std::thread::hardware_concurrency();
-    auto checkmate_concurrent_1 = checkmate_in_n_concurrent_1(pos, 8);
+    auto checkmate_concurrent_1 = checkmate_in_n_concurrent_dfs(pos, 8);
+    auto checkmate_concurrent_hashmap = checkmate_in_n_concurrent_dfs_atomic_hashmap(pos, 8);
     stopwatch.elapsed();
     bool answer = checkmate.findAnswer(5);
     cout << "Checkmate-In-N Sequential Returned " << answer << " with an execution time: " << stopwatch.elapsed() << endl;
@@ -46,9 +48,11 @@ int main() {
     bool answer_concurrent_1 = checkmate_concurrent_1.findAnswer(5);
     cout << "Checkmate-In-N Concurrent_1 Returned " << answer_concurrent_1 << " with an execution time: " << stopwatch.elapsed() << endl;
 
-    auto checkmate_concurrent_2 = checkmate_in_n_concurrent_2(pos, 8);
+    auto checkmate_concurrent_2 = checkmate_in_n_concurrent_dfs_atomic(pos, 8);
     stopwatch.elapsed();
     bool answer_concurrent_2 = checkmate_concurrent_2.findAnswer(5);
     cout << "Checkmate-In-N Concurrent_2 Returned " << answer_concurrent_2 << " with an execution time: " << stopwatch.elapsed() << endl;
+    bool answer_hashmap = checkmate_concurrent_hashmap.findAnswer(5);
+    cout << "Checkmate-In-N Concurrent_hashmap Returned " << answer_concurrent_2 << " with an execution time: " << stopwatch.elapsed() << endl;
     return 0;
 }
