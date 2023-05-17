@@ -1,12 +1,12 @@
+#include <string>
+#include <chrono>
+#include <iostream>
 #include <checkmate_in_n_sequential.hpp>
+#include <checkmate_in_n_modified.hpp>
 #include <checkmate_in_n_concurrent_bfs.hpp>
 #include <checkmate_in_n_concurrent_dfs.hpp>
 #include <checkmate_in_n_concurrent_dfs_atomic.hpp>
 #include <checkmate_in_n_concurrent_dfs_atomic_hashmap.hpp>
-#include <checkmate_in_n_modified.hpp>
-#include <iostream>
-#include <string>
-#include <chrono>
 
 using namespace std;
 
@@ -24,35 +24,106 @@ public:
 
 // Test the solution
 int main() {
-    // 2 moves
-    // 3qr2k/pbpp2pp/1p5N/3Q2b1/2P1P3/P7/1PP2PPP/R4RK1 w - - 0 1
-    // 9 moves
-    // 6q1/3r1p2/2N1nk1K/3rp3/8/5PP1/8/1Q1N4 w - - 0 1
-    string fen = "6q1/3r1p2/2N1nk1K/3rp3/8/5PP1/8/1Q1N4 w - - 0 1";
     timer stopwatch;
-    auto pos = libchess::Position(fen, true);
-    auto checkmate = checkmate_in_n(pos);
-    auto modified = checkmate_in_n_modified(pos);
-    auto checkmate_concurrent = checkmate_in_n_concurrent_bfs(pos);
-    unsigned int numThreads = std::thread::hardware_concurrency();
-    auto checkmate_concurrent_1 = checkmate_in_n_concurrent_dfs(pos, 8);
-    auto checkmate_concurrent_hashmap = checkmate_in_n_concurrent_dfs_atomic_hashmap(pos, 8);
+    string nine_moves = "6q1/3r1p2/2N1nk1K/3rp3/8/5PP1/8/1Q1N4 w - - 0 1";
+    string two_moves = "3qr2k/pbpp2pp/1p5N/3Q2b1/2P1P3/P7/1PP2PPP/R4RK1 w - - 0 1";
+    auto nine_pos = libchess::Position(nine_moves, true);
+    auto two_pos = libchess::Position(two_moves, true);
+    auto checkmate = checkmate_in_n(nine_pos);
+    auto modified = checkmate_in_n_modified(nine_pos);
+    auto checkmate_concurrent_bfs = checkmate_in_n_concurrent_bfs(nine_pos);
+    auto checkmate_concurrent_dfs = checkmate_in_n_concurrent_dfs(nine_pos, 8);
+    auto checkmate_concurrent_dfs_atomic = checkmate_in_n_concurrent_dfs_atomic(nine_pos, 8);
+    auto checkmate_concurrent_dfs_atomic_hashmap = checkmate_in_n_concurrent_dfs_atomic_hashmap(nine_pos, 8);
+    // Test 1
     stopwatch.elapsed();
-    bool answer = checkmate.findAnswer(5);
-    cout << "Checkmate-In-N Sequential Returned " << answer << " with an execution time: " << stopwatch.elapsed() << endl;
-    // bool answer_modified = modified.findAnswer(7);
-    // cout << "Checkmate-In-N Modified Returned " << answer_modified << " with an execution time: " << stopwatch.elapsed() << endl;
-    // bool answer_concurrent = checkmate_concurrent.findAnswer(5);
-    // cout << "Checkmate-In-N Concurrent Returned " << answer_concurrent << " with an execution time: " << stopwatch.elapsed() << endl;
-    // printf("Running the concurrent version with %d threads\n", numThreads);
-    bool answer_concurrent_1 = checkmate_concurrent_1.findAnswer(5);
-    cout << "Checkmate-In-N Concurrent_1 Returned " << answer_concurrent_1 << " with an execution time: " << stopwatch.elapsed() << endl;
-
-    auto checkmate_concurrent_2 = checkmate_in_n_concurrent_dfs_atomic(pos, 8);
+    cout << "Checkmate-In-N Sequential Returned " << checkmate.findAnswer(1) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N Modified Returned " << modified.findAnswer(1) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N BFS Returned " << checkmate_concurrent_bfs.findAnswer(1) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs.findAnswer(1) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic.findAnswer(1) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap.findAnswer(1) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
     stopwatch.elapsed();
-    bool answer_concurrent_2 = checkmate_concurrent_2.findAnswer(5);
-    cout << "Checkmate-In-N Concurrent_2 Returned " << answer_concurrent_2 << " with an execution time: " << stopwatch.elapsed() << endl;
-    bool answer_hashmap = checkmate_concurrent_hashmap.findAnswer(5);
-    cout << "Checkmate-In-N Concurrent_hashmap Returned " << answer_concurrent_2 << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N Sequential Returned " << checkmate.findAnswer(2) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N Modified Returned " << modified.findAnswer(2) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N BFS Returned " << checkmate_concurrent_bfs.findAnswer(2) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs.findAnswer(2) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic.findAnswer(2) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap.findAnswer(2) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
+    stopwatch.elapsed();
+    cout << "Checkmate-In-N Sequential Returned " << checkmate.findAnswer(3) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N Modified Returned " << modified.findAnswer(3) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N BFS Returned " << checkmate_concurrent_bfs.findAnswer(3) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs.findAnswer(3) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic.findAnswer(3) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap.findAnswer(3) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
+    stopwatch.elapsed();
+    cout << "Checkmate-In-N Sequential Returned " << checkmate.findAnswer(4) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N Modified Returned " << modified.findAnswer(4) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N BFS Returned " << checkmate_concurrent_bfs.findAnswer(4) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs.findAnswer(4) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic.findAnswer(4) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap.findAnswer(4) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
+    stopwatch.elapsed();
+    cout << "Checkmate-In-N Sequential Returned " << checkmate.findAnswer(5) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N Modified Returned " << modified.findAnswer(5) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N BFS Returned " << checkmate_concurrent_bfs.findAnswer(5) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs.findAnswer(5) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic.findAnswer(5) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap.findAnswer(5) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
+    stopwatch.elapsed();
+    cout << "Checkmate-In-N Sequential Returned " << checkmate.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N Modified Returned " << modified.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N BFS Returned " << checkmate_concurrent_bfs.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
+    stopwatch.elapsed();
+    cout << "Checkmate-In-N Sequential Returned " << checkmate.findAnswer(7) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N Modified Returned " << modified.findAnswer(7) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N BFS Returned " << checkmate_concurrent_bfs.findAnswer(7) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs.findAnswer(7) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic.findAnswer(7) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap.findAnswer(7) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
+    // Test 2 
+    auto checkmate_concurrent_dfs_t2 = checkmate_in_n_concurrent_dfs(two_pos, 2);
+    auto checkmate_concurrent_dfs_atomic_t2 = checkmate_in_n_concurrent_dfs_atomic(two_pos, 2);
+    auto checkmate_concurrent_dfs_atomic_hashmap_t2 = checkmate_in_n_concurrent_dfs_atomic_hashmap(two_pos, 2);
+    stopwatch.elapsed();
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs_t2.findAnswer(5) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic_t2.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap_t2.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
+    auto checkmate_concurrent_dfs_t4 = checkmate_in_n_concurrent_dfs(nine_pos, 4);
+    auto checkmate_concurrent_dfs_atomic_t4 = checkmate_in_n_concurrent_dfs_atomic(nine_pos, 4);
+    auto checkmate_concurrent_dfs_atomic_hashmap_t4 = checkmate_in_n_concurrent_dfs_atomic_hashmap(nine_pos, 4);
+    stopwatch.elapsed();
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs_t4.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic_t4.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap_t4.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
+    auto checkmate_concurrent_dfs_t8 = checkmate_in_n_concurrent_dfs(nine_pos, 8);
+    auto checkmate_concurrent_dfs_atomic_t8 = checkmate_in_n_concurrent_dfs_atomic(nine_pos, 8);
+    auto checkmate_concurrent_dfs_atomic_hashmap_t8 = checkmate_in_n_concurrent_dfs_atomic_hashmap(nine_pos, 8);
+    stopwatch.elapsed();
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs_t8.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic_t8.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap_t8.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
+    auto checkmate_concurrent_dfs_t16 = checkmate_in_n_concurrent_dfs(nine_pos, 16);
+    auto checkmate_concurrent_dfs_atomic_t16 = checkmate_in_n_concurrent_dfs_atomic(nine_pos, 16);
+    auto checkmate_concurrent_dfs_atomic_hashmap_t16 = checkmate_in_n_concurrent_dfs_atomic_hashmap(nine_pos, 16);
+    stopwatch.elapsed();
+    cout << "Checkmate-In-N DFS Returned " << checkmate_concurrent_dfs_t16.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic Returned " << checkmate_concurrent_dfs_atomic_t16.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "Checkmate-In-N DFS Atomic HashMap Returned " << checkmate_concurrent_dfs_atomic_hashmap_t16.findAnswer(6) << " with an execution time: " << stopwatch.elapsed() << endl;
+    cout << "-------------------------------------" << endl;
     return 0;
 }

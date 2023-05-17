@@ -21,3 +21,11 @@ tar -xvzf oneapi-tbb-2021.8.0-lin.tgz
 ```
 module load gcc-11.2.0 && source oneapi-tbb-2021.8.0/env/vars.sh
 ```
+- The code was only tested on linux environmnet (sunlab)
+
+## Run
+- To run the code you can just build it using the makefile and running the executable
+```
+make
+./main
+```

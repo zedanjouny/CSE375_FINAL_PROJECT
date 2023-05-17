@@ -8,22 +8,24 @@ using namespace std;
 using namespace libchess;
 using namespace tbb;
 
+// Custom hash and equality functions for the concurrent_hash_map
 struct MyHashCompare {
-    static size_t hash( const string& fen ) {
+    static size_t hash(const string& fen) { // takes board fen as input
         size_t h = 0;
-        for( const char* s = fen.c_str(); *s; ++s )
-            h = (h*17)^*s;
+        for (const char* s = fen.c_str(); *s; ++s)
+            h = (h * 17) ^ *s;
         return h;
     }
-    //! True if strings are equal
-    static bool equal( const string& fen, const string& y ) {
-        return fen==y;
+
+    static bool equal(const string& fen, const string& y) {
+        return fen == y;
     }
 };
 
+// Struct to store the results of a board
 struct boardOutcome {
-    bool checkmate;
-    int greatestDepth;
+    bool checkmate;     // True if the board results in a checkmate
+    int greatestDepth;  // Greatest depth that has been searched for this board (steps left)
 };
 
 typedef concurrent_hash_map<string, boardOutcome, MyHashCompare> BoardMap;
@@ -33,7 +35,7 @@ class checkmate_in_n_concurrent_dfs_atomic_hashmap {
     int threads_size;
     atomic<bool> checkmate_found;
     int maxdepth;
-    BoardMap boardMap;
+    BoardMap boardMap;  // concurrent_hash_map to store the results of the board
 
 public:
     // Constructor initializing position, thread size, and checkmate-related variables
@@ -86,10 +88,10 @@ public:
         }
         auto moves = p.legal_moves();
 
-        for (const auto &move : moves) {
+        for (const auto& move : moves) {
             Position temp(p.get_fen());
             temp.makemove(move);
-            
+
             // Check if the board has already been processed
             BoardMap::const_accessor result;
             if (boardMap.find(result, temp.get_fen())) {
@@ -98,7 +100,7 @@ public:
                 }
             }
             result.release();
-            
+
             bool found = _opponentMove(depth, temp);
 
             // Store the board outcome in the concurrent_hash_map
@@ -126,7 +128,7 @@ public:
             return false;
         }
 
-        for (const auto &move : moves) {
+        for (const auto& move : moves) {
             Position temp(p.get_fen());
             temp.makemove(move);
 
