@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-# Plotting the execution time of the algorithm on the board with no forced check mate
+import numpy as np
 # It is important because we know that 
 
 # plot #1 compare the algorithms with fixed number of threads on different number of N
@@ -12,6 +12,37 @@ concurrent_bfs = [0.00027215, 0.00140542, 0.0312002, 0.687003, 12.9125, 210.178]
 concurrent_dfs = [0.00112347, 0.000600531, 0.00661808, 0.129037, 1.198241, 32.0686]
 concurrent_dfs_atomic = [0.00314768, 0.000567349, 0.00608291, 0.0972588, 1.99642, 31.6194]
 concurrent_dfs_atomic_hashmap = [0.000279687, 0.000757293, 0.00739638, 0.0749987, 0.733426, 5.08612]
+# Data
+algorithms = ['Sequential', 'Modified', 'Concurrent BFS', 'Concurrent DFS', 'Concurrent DFS Atomic', 'Concurrent DFS Atomic Hashmap']
+data = [
+    sequential,
+    modified,
+    concurrent_bfs,
+    concurrent_dfs,
+    concurrent_dfs_atomic,
+    concurrent_dfs_atomic_hashmap
+]
+
+# Setting up the plot
+bar_width = 0.1
+bar_positions = np.arange(len(N))
+colors = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow']
+
+# Plotting the data
+fig, ax = plt.subplots()
+for i, (algorithm, times, color) in enumerate(zip(algorithms, data, colors)):
+    ax.bar(bar_positions + i * bar_width, times, width=bar_width, color=color, label=algorithm)
+
+# Formatting the plot
+ax.set_xlabel('N')
+ax.set_ylabel('Execution Time (log scale)')
+ax.set_yscale('log')
+ax.set_xticks(bar_positions + bar_width * (len(data) - 1) / 2)
+ax.set_xticklabels(N)
+ax.set_title('Execution Time of Different Algorithms')
+ax.legend()
+
+plt.show()
 
 # plot #2 compare the concurrent algorithms with different number of threads on fixed N
 
