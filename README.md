@@ -29,3 +29,6 @@ module load gcc-11.2.0 && source oneapi-tbb-2021.8.0/env/vars.sh
 make
 ./main
 ```
+## Authors
+- Jouny Zedan
+- Artem Maryanskyy
